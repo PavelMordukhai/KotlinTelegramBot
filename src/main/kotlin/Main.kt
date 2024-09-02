@@ -1,16 +1,44 @@
 package org.example
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-fun main() {
-    val name = "Kotlin"
-    //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-    // to see how IntelliJ IDEA suggests fixing it.
-    println("Hello, " + name + "!")
+import java.io.File
 
-    for (i in 1..5) {
-        //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-        // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        println("i = $i")
+data class Word(
+    val original: String,
+    val translate: String,
+    val correctAnswersCount: Int? = 0,
+)
+
+fun main() {
+    val dictionary: MutableList<Word> = mutableListOf()
+
+    val wordsFile: File = File("words.txt")
+    wordsFile.createNewFile()
+    wordsFile.writeText("hello|привет|2\n")
+    wordsFile.appendText("dog|собака|1\n")
+    wordsFile.appendText("cat|кошка|0\n")
+    wordsFile.appendText("thank you|спасибо|")
+
+    val lines: List<String> = wordsFile.readLines()
+    for (line in lines) {
+        val splitLine = line.split("|")
+        val word = Word(splitLine[0], splitLine[1], splitLine[2].toIntOrNull() ?: 0)
+        dictionary.add(word)
     }
+
+    while (true) {
+        println("""
+            Меню:
+            1 - Учить слова
+            2 - Статистика
+            0 - Выход
+        """.trimIndent())
+        when (readlnOrNull()?.trim()) {
+            "1" -> println("Выбран пункт 1 - Учить слова")
+            "2" -> println("Выбран пункт 2 - Статистика")
+            "0" -> break
+            else -> println("Неверный ввод, введите 1, 2 или 0")
+        }
+    }
+
+    dictionary.forEach { println(it) }
 }
