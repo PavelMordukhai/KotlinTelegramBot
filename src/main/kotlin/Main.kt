@@ -13,15 +13,7 @@ data class Word(
 
 fun main() {
     val dictionary: MutableList<Word> = mutableListOf()
-
     val wordsFile = File("words.txt")
-    wordsFile.createNewFile()
-    wordsFile.writeText("hello|привет|1\n")
-    wordsFile.appendText("dog|собака|1\n")
-    wordsFile.appendText("cat|кошка|1\n")
-    wordsFile.appendText("green|зелёный|1\n")
-    wordsFile.appendText("read|читать|1\n")
-    wordsFile.appendText("thank you|спасибо|1")
 
     val lines: List<String> = wordsFile.readLines()
     for (line in lines) {
@@ -52,27 +44,16 @@ fun main() {
                         println("Вы выучили все слова")
                         break
                     }
-                    val unlearnedWordsCount = unlearnedWords.size
 
-                    val answers = if (unlearnedWordsCount <= NUMBER_OF_ANSWER_CHOICES)
-                        unlearnedWords
-                    else
-                        unlearnedWords.take(NUMBER_OF_ANSWER_CHOICES)
-
+                    val answers = unlearnedWords.take(NUMBER_OF_ANSWER_CHOICES)
                     val englishWord = answers.random().original
                     println(englishWord)
-
-                    for (i in answers.indices) {
-                        print("${i + 1} - ${answers[i].translate}")
-                        if (i < (answers.size - 1)) print(", ") else println()
-                    }
-
+                    println(answers.joinToString { it: Word -> "${answers.indexOf(it) + 1} - ${it.translate}" })
                     print("Ваш ответ: ")
+
                     if (readlnOrNull()?.trim() == "0") break
-                    else {
-                        println()
-                        continue
-                    }
+                    println()
+                    continue
                 }
             }
 
