@@ -53,7 +53,6 @@ fun main() {
 
                     if (readlnOrNull()?.trim() == "0") break
                     println()
-                    continue
                 }
             }
 
