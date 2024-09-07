@@ -8,11 +8,8 @@ const val NUMBER_OF_ANSWER_CHOICES = 4
 data class Word(
     val original: String,
     val translate: String,
-    private var correctAnswersCount: Int = 0,
-) {
-    fun getCorrectAnswersCount() = correctAnswersCount
-    fun setCorrectAnswersCount() = ++correctAnswersCount
-}
+    var correctAnswersCount: Int = 0,
+)
 
 fun main() {
 
@@ -42,7 +39,7 @@ fun main() {
                 println("\nВведите 0 для выхода в главное меню\n")
                 while (true) {
                     val unlearnedWords = dictionary
-                        .filter { it.getCorrectAnswersCount() < MIN_CORRECT_ANSWERS_COUNT }.shuffled()
+                        .filter { it.correctAnswersCount < MIN_CORRECT_ANSWERS_COUNT }.shuffled()
 
                     if (unlearnedWords.isEmpty()) {
                         println("Вы выучили все слова")
@@ -69,7 +66,7 @@ fun main() {
             "2" -> {
                 val numberOfWords = dictionary.size
                 val numberOfLearnedWords = dictionary
-                    .filter { it.getCorrectAnswersCount() >= MIN_CORRECT_ANSWERS_COUNT }.size
+                    .filter { it.correctAnswersCount >= MIN_CORRECT_ANSWERS_COUNT }.size
                 val percentage = numberOfLearnedWords * 100 / numberOfWords
 
                 println("Выучено $numberOfLearnedWords из $numberOfWords слов | $percentage%")
@@ -82,9 +79,10 @@ fun main() {
 }
 
 fun saveDictionary(word: Word, dictionary: MutableList<Word>, file: File) {
-    dictionary[dictionary.indexOf(word)].setCorrectAnswersCount()
+    ++(dictionary[dictionary.indexOf(word)].correctAnswersCount)
+
     file.writeText("")
     for (i in dictionary) {
-        file.appendText("${i.original}|${i.translate}|${i.getCorrectAnswersCount()}\n")
+        file.appendText("${i.original}|${i.translate}|${i.correctAnswersCount}\n")
     }
 }
