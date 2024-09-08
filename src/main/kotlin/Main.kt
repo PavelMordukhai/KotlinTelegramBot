@@ -19,7 +19,7 @@ fun Question.asConsoleString(): String {
 
 fun main() {
 
-    val trainer = LearnWordsTrainerTest()
+    val trainer = LearnWordsTrainer()
 
     while (true) {
 
