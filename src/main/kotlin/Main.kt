@@ -1,14 +1,5 @@
 package org.example
 
-const val MIN_CORRECT_ANSWERS_COUNT = 3
-const val NUMBER_OF_ANSWER_CHOICES = 4
-
-data class Word(
-    val original: String,
-    val translate: String,
-    var correctAnswersCount: Int = 0,
-)
-
 fun Question.asConsoleString(): String {
     val answerOptions = this.answerOptions
         .mapIndexed { index, word -> " ${index + 1} - ${word.translate}" }
