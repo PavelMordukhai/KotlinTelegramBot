@@ -10,7 +10,12 @@ fun Question.asConsoleString(): String {
 
 fun main() {
 
-    val trainer = LearnWordsTrainer()
+    val trainer = try {
+        LearnWordsTrainer()
+    } catch (e: Exception) {
+        println("Невозможно загрузить словарь")
+        return
+    }
 
     while (true) {
 
@@ -29,25 +34,33 @@ fun main() {
             1 -> {
                 while (true) {
                     println()
-
                     val question = trainer.getNextQuestion()
-
                     if (question == null) {
                         println("Вы выучили все слова")
                         break
                     }
-
                     print(question.asConsoleString())
 
-                    val userAnswerInput = readln().trim().toIntOrNull()
-                    if (userAnswerInput == 0) break
+                    var userAnswerInput: Int?
+                    do {
+                        userAnswerInput = readln().trim().toIntOrNull()
 
-                    if (trainer.checkAnswer(userAnswerInput?.minus(1)))
-                        println("\nПравильно!")
-                    else
-                        println("\nНеправильно! " +
-                                "${question.correctAnswer.original} " +
-                                "- ${question.correctAnswer.translate}")
+                        if (userAnswerInput !in 0..NUMBER_OF_ANSWER_CHOICES) {
+                            print("Неверный ввод. Введите номер ответа либо 0: ")
+                            continue
+                        } else if (userAnswerInput == 0) {
+                            break
+                        } else if (trainer.checkAnswer(userAnswerInput?.minus(1))) {
+                            println("\nПравильно!")
+                        } else {
+                            println(
+                                "\nНеправильно! " +
+                                        "${question.correctAnswer.original} " +
+                                        "- ${question.correctAnswer.translate}"
+                            )
+                        }
+                    } while (userAnswerInput !in 0..NUMBER_OF_ANSWER_CHOICES)
+                    if (userAnswerInput == 0) break
                 }
             }
 
