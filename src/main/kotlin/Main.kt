@@ -4,8 +4,7 @@ fun Question.asConsoleString(): String {
     val answerOptions = this.answerOptions
         .mapIndexed { index, word -> " ${index + 1} - ${word.translate}" }
         .joinToString("\n")
-    return this.correctAnswer.original + "\n" + answerOptions +
-            "\n 0 - Выход в меню" + "\n"
+    return this.correctAnswer.original + "\n" + answerOptions + "\n 0 - Выход в меню\n"
 }
 
 fun main() {
