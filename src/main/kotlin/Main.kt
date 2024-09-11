@@ -5,7 +5,7 @@ fun Question.asConsoleString(): String {
         .mapIndexed { index, word -> " ${index + 1} - ${word.translate}" }
         .joinToString("\n")
     return this.correctAnswer.original + "\n" + answerOptions +
-            "\n 0 - Выход в меню" + "\n" + "Введите номер ответа: "
+            "\n 0 - Выход в меню" + "\n"
 }
 
 fun main() {
@@ -43,24 +43,17 @@ fun main() {
 
                     var userAnswerInput: Int?
                     do {
+                        print("Введите номер ответа либо 0: ")
                         userAnswerInput = readln().trim().toIntOrNull()
-
-                        if (userAnswerInput !in 0..NUMBER_OF_ANSWER_CHOICES) {
-                            print("Неверный ввод. Введите номер ответа либо 0: ")
-                            continue
-                        } else if (userAnswerInput == 0) {
-                            break
-                        } else if (trainer.checkAnswer(userAnswerInput?.minus(1))) {
-                            println("\nПравильно!")
-                        } else {
-                            println(
-                                "\nНеправильно! " +
-                                        "${question.correctAnswer.original} " +
-                                        "- ${question.correctAnswer.translate}"
-                            )
-                        }
                     } while (userAnswerInput !in 0..NUMBER_OF_ANSWER_CHOICES)
-                    if (userAnswerInput == 0) break
+
+                    when {
+                        userAnswerInput == 0 -> break
+                        trainer.checkAnswer(userAnswerInput?.minus(1)) -> println("\nПравильно!")
+                        else -> println("\nНеправильно! ${question.correctAnswer.original} " +
+                                    "- ${question.correctAnswer.translate}"
+                        )
+                    }
                 }
             }
 
