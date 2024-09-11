@@ -49,7 +49,7 @@ class LearnWordsTrainer {
             val learnedWords = dictionary.filter {
                 it.correctAnswersCount >= MIN_CORRECT_ANSWERS_COUNT
             }
-            (unlearnedWords + learnedWords.take(NUMBER_OF_ANSWER_CHOICES - unlearnedWords.size)).shuffled()
+            (unlearnedWords + learnedWords.shuffled().take(NUMBER_OF_ANSWER_CHOICES - unlearnedWords.size)).shuffled()
         } else
             unlearnedWords.shuffled().take(NUMBER_OF_ANSWER_CHOICES)
 
