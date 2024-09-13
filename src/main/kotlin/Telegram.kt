@@ -5,21 +5,24 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
+const val TELEGRAM_API_DOMAIN = "https://api.telegram.org"
+
 fun main(args: Array<String>) {
 
     val botToken = args[0]
-    val urlGetMe = "https://api.telegram.org/bot$botToken/getMe"
-    val urlGetUpdates = "https://api.telegram.org/bot$botToken/getUpdates"
+    val urlGetMe = "$TELEGRAM_API_DOMAIN/bot$botToken/getMe"
+    val urlGetUpdates = "$TELEGRAM_API_DOMAIN/bot$botToken/getUpdates"
 
-    val client: HttpClient = HttpClient.newBuilder().build()
+    val getMeClient: HttpClient = HttpClient.newBuilder().build()
+    val getUpdatesClient: HttpClient = HttpClient.newBuilder().build()
 
-    val request1: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetMe)).build()
-    val request2: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
+    val getMeRequest: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetMe)).build()
+    val getUpdatesRequest: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
 
-    val response1: HttpResponse<String> = client.send(request1, HttpResponse.BodyHandlers.ofString())
-    val response2: HttpResponse<String> = client.send(request2, HttpResponse.BodyHandlers.ofString())
+    val getMeResponse: HttpResponse<String> = getMeClient.send(getMeRequest, HttpResponse.BodyHandlers.ofString())
+    val getUpdatesResponse: HttpResponse<String> = getUpdatesClient.send(getUpdatesRequest, HttpResponse.BodyHandlers.ofString())
 
-    println(response1.body())
+    println(getMeResponse.body())
     println()
-    println(response2.body())
+    println(getUpdatesResponse.body())
 }
