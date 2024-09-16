@@ -10,23 +10,23 @@ const val TELEGRAM_API_DOMAIN = "https://api.telegram.org"
 fun main(args: Array<String>) {
 
     val botToken = args[0]
-    var updateId = 0
+    var updateId: Int? = 0
 
     while (true) {
         Thread.sleep(2000)
         val updates: String = getUpdates(botToken, updateId)
         println(updates)
 
-        val startUpdateId = updates.lastIndexOf("update_id")
-        val endUpdateId = updates.lastIndexOf(",\n\"message\"")
-        if (startUpdateId == -1 || endUpdateId == -1)
-            continue
-        val updateIdString = updates.substring(startUpdateId + 11, endUpdateId)
-        updateId = updateIdString.toInt() + 1
+        val updateIdString: Regex = "\"update_id\":(.+?),".toRegex()
+        val matchResult: MatchResult? = updateIdString.find(updates)
+        val groups = matchResult?.groups
+        updateId = groups?.get(1)?.value?.toInt()
+        println(updateId)
+        updateId = updateId?.plus(1)
     }
 }
 
-fun getUpdates(botToken: String, updateId: Int): String {
+fun getUpdates(botToken: String, updateId: Int?): String {
     val urlGetUpdates = "$TELEGRAM_API_DOMAIN/bot$botToken/getUpdates?offset=$updateId"
     val getUpdatesClient: HttpClient = HttpClient.newBuilder().build()
     val getUpdatesRequest: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
