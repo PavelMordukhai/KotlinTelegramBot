@@ -20,9 +20,8 @@ fun main(args: Array<String>) {
         val updateIdString: Regex = "\"update_id\":(.+?),".toRegex()
         val matchResult: MatchResult? = updateIdString.find(updates)
         val groups = matchResult?.groups
-        updateId = groups?.get(1)?.value?.toInt()
+        updateId = groups?.get(1)?.value?.toInt()?.plus(1)
         println(updateId)
-        updateId = updateId?.plus(1)
     }
 }
 
