@@ -1,35 +1,36 @@
 package org.example
 
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
-
-const val TELEGRAM_API_DOMAIN = "https://api.telegram.org"
-
 fun main(args: Array<String>) {
+
+    val telegramBotService = TelegramBotService()
 
     val botToken = args[0]
     var updateId: Int? = 0
+    var chatId: Long? = 0
 
     while (true) {
         Thread.sleep(2000)
-        val updates: String = getUpdates(botToken, updateId)
+        val updates: String = telegramBotService.getUpdates(botToken, updateId)
         println(updates)
 
         val updateIdString: Regex = "\"update_id\":(.+?),".toRegex()
-        val matchResult: MatchResult? = updateIdString.find(updates)
-        val groups = matchResult?.groups
-        updateId = groups?.get(1)?.value?.toInt()?.plus(1)
+        val updateIdMatchResult: MatchResult? = updateIdString.find(updates)
+        val updateIdGroups = updateIdMatchResult?.groups
+        updateId = updateIdGroups?.get(1)?.value?.toInt()?.plus(1)
         println(updateId)
+
+        val chatIdString: Regex = "\"id\":(.+?),".toRegex()
+        val chatIdMatchResult: MatchResult? = chatIdString.find(updates)
+        val chatIdGroups = chatIdMatchResult?.groups
+        chatId = chatIdGroups?.get(1)?.value?.toLong()
+
+        val messageTextRegex: Regex = "\"text\":\"(.+?)\"".toRegex()
+        val messageTextMatchResult: MatchResult? = messageTextRegex.find(updates)
+        val messageTextGroups = messageTextMatchResult?.groups
+        val text = messageTextGroups?.get(1)?.value
+
+        val helloResponse = "Hello"
+        if (text?.lowercase() == helloResponse.lowercase())
+            telegramBotService.sendMessage(botToken, chatId, helloResponse)
     }
-}
-
-fun getUpdates(botToken: String, updateId: Int?): String {
-    val urlGetUpdates = "$TELEGRAM_API_DOMAIN/bot$botToken/getUpdates?offset=$updateId"
-    val getUpdatesClient: HttpClient = HttpClient.newBuilder().build()
-    val getUpdatesRequest: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
-    val getUpdatesResponse: HttpResponse<String> = getUpdatesClient.send(getUpdatesRequest, HttpResponse.BodyHandlers.ofString())
-
-    return getUpdatesResponse.body()
 }
