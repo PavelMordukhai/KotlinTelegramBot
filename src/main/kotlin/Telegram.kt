@@ -4,33 +4,44 @@ fun main(args: Array<String>) {
 
     val telegramBotService = TelegramBotService()
 
+    val trainer = try {
+        LearnWordsTrainer()
+    } catch (e: Exception) {
+        println("Невозможно загрузить словарь")
+        return
+    }
+
     val botToken = args[0]
-    var updateId: Int? = 0
-    var chatId: Long? = 0
+    var lastUpdateId: Int? = 0
+
+    val updateIdRegex: Regex = "\"update_id\":(\\d+),".toRegex()
+    val messageTextRegex: Regex = "\"text\":\"(.+?)\"".toRegex()
+    val chatIdRegex: Regex = "\"chat\":\\{\"id\":(\\d+),".toRegex()
+    val dataRegex: Regex = "\"data\":\"(.+?)\"".toRegex()
+
+    val helloResponse = "Hello"
+    val commandsForSendMenu = listOf("menu", "/start")
 
     while (true) {
         Thread.sleep(2000)
-        val updates: String = telegramBotService.getUpdates(botToken, updateId)
+        val updates: String = telegramBotService.getUpdates(botToken, lastUpdateId)
         println(updates)
 
-        val updateIdString: Regex = "\"update_id\":(.+?),".toRegex()
-        val updateIdMatchResult: MatchResult? = updateIdString.find(updates)
-        val updateIdGroups = updateIdMatchResult?.groups
-        updateId = updateIdGroups?.get(1)?.value?.toInt()?.plus(1)
-        println(updateId)
+        val updateId = updateIdRegex.find(updates)?.groups?.get(1)?.value?.toIntOrNull() ?: continue
+        lastUpdateId = updateId + 1
+        println(lastUpdateId)
 
-        val chatIdString: Regex = "\"id\":(.+?),".toRegex()
-        val chatIdMatchResult: MatchResult? = chatIdString.find(updates)
-        val chatIdGroups = chatIdMatchResult?.groups
-        chatId = chatIdGroups?.get(1)?.value?.toLong()
+        var chatId = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toLong()
+        val text = messageTextRegex.find(updates)?.groups?.get(1)?.value
+        val data = dataRegex.find(updates)?.groups?.get(1)?.value
 
-        val messageTextRegex: Regex = "\"text\":\"(.+?)\"".toRegex()
-        val messageTextMatchResult: MatchResult? = messageTextRegex.find(updates)
-        val messageTextGroups = messageTextMatchResult?.groups
-        val text = messageTextGroups?.get(1)?.value
-
-        val helloResponse = "Hello"
-        if (text?.lowercase() == helloResponse.lowercase())
+        if (text?.lowercase() == helloResponse.lowercase() && chatId != null)
             telegramBotService.sendMessage(botToken, chatId, helloResponse)
+
+        if ((text?.lowercase() in commandsForSendMenu) && chatId != null)
+            telegramBotService.sendMenu(botToken, chatId)
+
+        if (data?.lowercase() == STATISTICS_CLICKED && chatId != null)
+            telegramBotService.sendMessage(botToken, chatId, "Выучено 10 из 10 слов | 100%")
     }
 }
