@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets
 const val TELEGRAM_API_DOMAIN = "https://api.telegram.org"
 const val LEARN_WORDS_CLICKED = "learn_words_clicked"
 const val STATISTICS_CLICKED = "statistics_clicked"
+const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
 
 class TelegramBotService {
 
@@ -66,6 +67,39 @@ class TelegramBotService {
             .uri(URI.create(urlSendMessage))
             .header("Content-type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(sendMenuBody))
+            .build()
+
+        val sendMessageResponse: HttpResponse<String> =
+            sendMessageClient.send(sendMessageRequest, HttpResponse.BodyHandlers.ofString())
+
+        return sendMessageResponse.body()
+    }
+
+    fun sendQuestion(botToken: String, chatId: Long?, question: Question): String {
+        val urlSendMessage = "$TELEGRAM_API_DOMAIN/bot$botToken/sendMessage"
+        val sendAnswersMenuBody = """
+            {
+            	"chat_id": $chatId,
+            	"text": "${question.correctAnswer.original}",
+            	"reply_markup": {
+            		"inline_keyboard": [
+                        ${
+                            question.answerOptions.mapIndexed { index, word -> 
+                            "[{\"text\": \"${word.translate}\", " +
+                                    "\"callback_data\": \"${CALLBACK_DATA_ANSWER_PREFIX + index.toString()}\"" +
+                                    "}]" 
+                            }.joinToString()
+                        }
+            		]
+            	}
+            }
+        """.trimIndent()
+
+        val sendMessageClient: HttpClient = HttpClient.newBuilder().build()
+        val sendMessageRequest: HttpRequest = HttpRequest.newBuilder()
+            .uri(URI.create(urlSendMessage))
+            .header("Content-type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(sendAnswersMenuBody))
             .build()
 
         val sendMessageResponse: HttpResponse<String> =

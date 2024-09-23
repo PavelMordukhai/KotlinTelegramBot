@@ -43,10 +43,26 @@ fun main(args: Array<String>) {
 
         val statistics = trainer.getStatistics()
         val statisticsString = "\nВыучено ${statistics.numberOfLearnedWords} " +
-                "из ${statistics.numberOfWords} слов | " +
-                "${statistics.percentage}%"
-
+                "из ${statistics.numberOfWords} слов | ${statistics.percentage}%"
         if (data?.lowercase() == STATISTICS_CLICKED && chatId != null)
             telegramBotService.sendMessage(botToken, chatId, statisticsString)
+
+        if (data?.lowercase() == LEARN_WORDS_CLICKED && chatId != null)
+            checkNextQuestionAndSend(trainer, telegramBotService, chatId, botToken)
     }
+}
+
+fun checkNextQuestionAndSend(
+    trainer: LearnWordsTrainer,
+    telegramBotService: TelegramBotService,
+    chatId: Long?,
+    botToken: String,
+) {
+    val question = trainer.getNextQuestion()
+    if (question == null) {
+        val response = "Вы выучили все слова в базе"
+        telegramBotService.sendMessage(botToken, chatId, response)
+    }
+    else
+        telegramBotService.sendQuestion(botToken, chatId, question)
 }
