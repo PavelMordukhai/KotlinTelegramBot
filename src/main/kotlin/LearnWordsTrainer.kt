@@ -1,11 +1,13 @@
 package org.example
 
+import kotlinx.serialization.Serializable
 import java.io.File
 
 const val MIN_CORRECT_ANSWERS_COUNT = 3
 const val NUMBER_OF_ANSWER_CHOICES = 4
 const val FILE_NAME = "words.txt"
 
+@Serializable
 data class Word(
     val original: String,
     val translate: String,
