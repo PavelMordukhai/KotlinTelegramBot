@@ -53,10 +53,12 @@ class TelegramBotService {
             chatId = chatId,
             text = "Основное меню",
             replyMarkup = ReplyMarkup(
-                listOf(listOf(
-                    InlineKeyBoard(text = "Изучать слова", callbackData = LEARN_WORDS_CLICKED),
-                    InlineKeyBoard(text = "Статистика", callbackData = STATISTICS_CLICKED),
-                ))
+                listOf(
+                    listOf(
+                        InlineKeyBoard(text = "Изучать слова", callbackData = LEARN_WORDS_CLICKED),
+                        InlineKeyBoard(text = "Статистика", callbackData = STATISTICS_CLICKED),
+                    )
+                )
             )
         )
         val requestBodyString = json.encodeToString(requestBody)
@@ -76,17 +78,19 @@ class TelegramBotService {
 
     fun sendQuestion(json: Json, botToken: String, chatId: Long?, question: Question): String {
         val urlSendMessage = "$TELEGRAM_API_DOMAIN/bot$botToken/sendMessage"
+        val option = mutableListOf<InlineKeyBoard>()
+        val optionsList = mutableListOf(listOf<InlineKeyBoard>())
+
+        for ((index, word) in question.answerOptions.withIndex()) {
+            option.add(InlineKeyBoard(text = word.translate, callbackData = "$CALLBACK_DATA_ANSWER_PREFIX$index"))
+            optionsList.add(option.toList())
+            option.clear()
+        }
 
         val requestBody = SendMessageRequest(
             chatId = chatId,
             text = question.correctAnswer.original,
-            replyMarkup = ReplyMarkup(
-                listOf(question.answerOptions.mapIndexed { index, word ->
-                    InlineKeyBoard(
-                        text = word.translate, callbackData = "$CALLBACK_DATA_ANSWER_PREFIX$index"
-                    )
-                })
-            )
+            replyMarkup = ReplyMarkup(optionsList.toList())
         )
         val requestBodyString = json.encodeToString(requestBody)
 
