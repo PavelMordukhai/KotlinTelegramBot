@@ -85,7 +85,6 @@ fun main(args: Array<String>) {
     } catch (e: Exception) {
         val message = "Невозможно загрузить словарь"
         println(message)
-        telegramBotService.sendMessage(json, botToken, null, message)
         return
     }
 
