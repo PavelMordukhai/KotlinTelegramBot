@@ -12,9 +12,12 @@ const val LEARN_WORDS_CLICKED = "learn_words_clicked"
 const val STATISTICS_CLICKED = "statistics_clicked"
 const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
 
-class TelegramBotService {
+class TelegramBotService(
+    private val botToken: String,
+    private val json: Json,
+) {
 
-    fun getUpdates(botToken: String, updateId: Long?): String {
+    fun getUpdates(updateId: Long?): String {
         val urlGetUpdates = "$TELEGRAM_API_DOMAIN/bot$botToken/getUpdates?offset=$updateId"
         val getUpdatesClient: HttpClient = HttpClient.newBuilder().build()
         val getUpdatesRequest: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
@@ -24,7 +27,7 @@ class TelegramBotService {
         return getUpdatesResponse.body()
     }
 
-    fun sendMessage(json: Json, botToken: String, chatId: Long?, text: String): String {
+    fun sendMessage(chatId: Long?, text: String): String {
         val urlSendMessage = "$TELEGRAM_API_DOMAIN/bot$botToken/sendMessage"
 
         val requestBody = SendMessageRequest(
@@ -46,7 +49,7 @@ class TelegramBotService {
         return sendMessageResponse.body()
     }
 
-    fun sendMenu(json: Json, botToken: String, chatId: Long): String {
+    fun sendMenu(chatId: Long): String {
         val urlSendMessage = "$TELEGRAM_API_DOMAIN/bot$botToken/sendMessage"
 
         val requestBody = SendMessageRequest(
@@ -76,7 +79,7 @@ class TelegramBotService {
         return sendMessageResponse.body()
     }
 
-    fun sendQuestion(json: Json, botToken: String, chatId: Long?, question: Question): String {
+    fun sendQuestion(chatId: Long?, question: Question): String {
         val urlSendMessage = "$TELEGRAM_API_DOMAIN/bot$botToken/sendMessage"
         val option = mutableListOf<InlineKeyBoard>()
         val optionsList = mutableListOf(listOf<InlineKeyBoard>())

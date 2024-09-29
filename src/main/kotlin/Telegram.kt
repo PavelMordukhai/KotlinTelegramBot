@@ -78,7 +78,7 @@ fun main(args: Array<String>) {
     val commandsForSendMenu = listOf("menu", "/start")
     var question: Question? = null
 
-    val telegramBotService = TelegramBotService()
+    val telegramBotService = TelegramBotService(botToken, json)
 
     val trainer = try {
         LearnWordsTrainer()
@@ -90,7 +90,7 @@ fun main(args: Array<String>) {
 
     while (true) {
         Thread.sleep(2000)
-        val responseString: String = telegramBotService.getUpdates(botToken, lastUpdateId)
+        val responseString: String = telegramBotService.getUpdates(lastUpdateId)
         println(responseString)
 
         val response: Response = json.decodeFromString(responseString)
@@ -102,21 +102,21 @@ fun main(args: Array<String>) {
         println(lastUpdateId)
 
         val message = firstUpdate.message?.text
-        var chatId = firstUpdate.message?.chat?.id ?: firstUpdate.callBackQuery?.message?.chat?.id
+        var chatId = firstUpdate.message?.chat?.id ?: firstUpdate.callBackQuery?.message?.chat?.id ?: continue
         val data = firstUpdate.callBackQuery?.data
         val isAnswerPrefixInData = data?.lowercase()?.startsWith(CALLBACK_DATA_ANSWER_PREFIX)
 
-        if ((message?.lowercase() == helloResponse.lowercase()) && (chatId != null))
-            telegramBotService.sendMessage(json, botToken, chatId, helloResponse)
+        if (message?.lowercase() == helloResponse.lowercase())
+            telegramBotService.sendMessage(chatId, helloResponse)
 
-        if ((message?.lowercase() in commandsForSendMenu) && (chatId != null))
-            telegramBotService.sendMenu(json, botToken, chatId)
+        if (message?.lowercase() in commandsForSendMenu)
+            telegramBotService.sendMenu(chatId)
 
-        if ((data?.lowercase() == STATISTICS_CLICKED) && (chatId != null)) {
+        if (data?.lowercase() == STATISTICS_CLICKED) {
             val statistics = trainer.getStatistics()
             val statisticsString = "\nВыучено ${statistics.numberOfLearnedWords} " +
                     "из ${statistics.numberOfWords} слов | ${statistics.percentage}%"
-            telegramBotService.sendMessage(json, botToken, chatId, statisticsString)
+            telegramBotService.sendMessage(chatId, statisticsString)
         }
 
         if ((isAnswerPrefixInData == true) && (question != null)) {
@@ -126,27 +126,25 @@ fun main(args: Array<String>) {
                 else -> "\nНеправильно! ${question.correctAnswer.original} " +
                         "- ${question.correctAnswer.translate}"
             }
-            telegramBotService.sendMessage(json, botToken, chatId, response)
-            question = checkNextQuestionAndSend(json, trainer, telegramBotService, chatId, botToken)
+            telegramBotService.sendMessage(chatId, response)
+            question = checkNextQuestionAndSend(trainer, telegramBotService, chatId)
         }
 
-        if ((data?.lowercase() == LEARN_WORDS_CLICKED) && (chatId != null))
-            question = checkNextQuestionAndSend(json, trainer, telegramBotService, chatId, botToken)
+        if (data?.lowercase() == LEARN_WORDS_CLICKED)
+            question = checkNextQuestionAndSend(trainer, telegramBotService, chatId)
     }
 }
 
 fun checkNextQuestionAndSend(
-    json: Json,
     trainer: LearnWordsTrainer,
     telegramBotService: TelegramBotService,
     chatId: Long?,
-    botToken: String,
 ): Question? {
     val question = trainer.getNextQuestion()
     if (question == null) {
         val response = "Вы выучили все слова в базе"
-        telegramBotService.sendMessage(json, botToken, chatId, response)
+        telegramBotService.sendMessage(chatId, response)
     } else
-        telegramBotService.sendQuestion(json, botToken, chatId, question)
+        telegramBotService.sendQuestion(chatId, question)
     return question
 }
