@@ -70,23 +70,9 @@ fun main(args: Array<String>) {
 
     val botToken = args[0]
     var lastUpdateId = 0L
-    val json = Json {
-        ignoreUnknownKeys = true
-    }
-
-    val helloResponse = "Hello"
-    val commandsForSendMenu = listOf("menu", "/start")
-    var question: Question? = null
-
+    val json = Json { ignoreUnknownKeys = true }
     val telegramBotService = TelegramBotService(botToken, json)
-
-    val trainer = try {
-        LearnWordsTrainer()
-    } catch (e: Exception) {
-        val message = "Невозможно загрузить словарь"
-        println(message)
-        return
-    }
+    val trainers = HashMap<Long, LearnWordsTrainer>()
 
     while (true) {
         Thread.sleep(2000)
@@ -94,44 +80,64 @@ fun main(args: Array<String>) {
         println(responseString)
 
         val response: Response = json.decodeFromString(responseString)
-        val updates = response.result
-        val firstUpdate = updates.firstOrNull() ?: continue
-        val updateId = firstUpdate.updateId
-        lastUpdateId = updateId + 1
+        if (response.result.isEmpty()) continue
+        val sortedUpdates = response.result.sortedBy { it.updateId }
+        sortedUpdates.forEach { handleUpdate(it, trainers, telegramBotService) }
+        lastUpdateId = sortedUpdates.last().updateId + 1
+    }
+}
 
-        println(lastUpdateId)
+fun handleUpdate(
+    update: Update,
+    trainers: HashMap<Long, LearnWordsTrainer>,
+    telegramBotService: TelegramBotService
+) {
+    val helloResponse = "Hello"
+    val commandsForSendMenu = listOf("menu", "/start")
 
-        val message = firstUpdate.message?.text
-        var chatId = firstUpdate.message?.chat?.id ?: firstUpdate.callBackQuery?.message?.chat?.id ?: continue
-        val data = firstUpdate.callBackQuery?.data
-        val isAnswerPrefixInData = data?.lowercase()?.startsWith(CALLBACK_DATA_ANSWER_PREFIX)
+    val message = update.message?.text
+    var chatId = update.message?.chat?.id
+        ?: update.callBackQuery?.message?.chat?.id ?: return
+    val data = update.callBackQuery?.data
+    val isAnswerPrefixInData = data?.lowercase()?.startsWith(CALLBACK_DATA_ANSWER_PREFIX)
 
-        if (message?.lowercase() == helloResponse.lowercase())
-            telegramBotService.sendMessage(chatId, helloResponse)
+    val trainer = try {
+        trainers.getOrPut(chatId) { LearnWordsTrainer("$chatId.txt") }
+    } catch (_: Exception) {
+        println("Невозможно загрузить словарь")
+        return
+    }
 
-        if (message?.lowercase() in commandsForSendMenu)
-            telegramBotService.sendMenu(chatId)
+    if (message?.lowercase() == helloResponse.lowercase())
+        telegramBotService.sendMessage(chatId, helloResponse)
 
-        if (data?.lowercase() == STATISTICS_CLICKED) {
-            val statistics = trainer.getStatistics()
-            val statisticsString = "\nВыучено ${statistics.numberOfLearnedWords} " +
-                    "из ${statistics.numberOfWords} слов | ${statistics.percentage}%"
-            telegramBotService.sendMessage(chatId, statisticsString)
+    if (message?.lowercase() in commandsForSendMenu)
+        telegramBotService.sendMenu(chatId)
+
+    if (data?.lowercase() == STATISTICS_CLICKED) {
+        val statistics = trainer.getStatistics()
+        val statisticsString = "\nВыучено ${statistics.numberOfLearnedWords} " +
+                "из ${statistics.numberOfWords} слов | ${statistics.percentage}%"
+        telegramBotService.sendMessage(chatId, statisticsString)
+    }
+
+    if (data?.lowercase() == LEARN_WORDS_CLICKED)
+        checkNextQuestionAndSend(trainer, telegramBotService, chatId)
+
+    if(data?.lowercase() == RESET_CLICKED) {
+        trainer.resetProgress()
+        telegramBotService.sendMessage(chatId, "Прогресс сброшен")
+    }
+
+    if (isAnswerPrefixInData == true) {
+        val answerIndex = data.lowercase().substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
+        val response = when {
+            trainer.checkAnswer(answerIndex) -> "Правильно!"
+            else -> "\nНеправильно! ${trainer.getQuestion()?.correctAnswer?.original} " +
+                    "- ${trainer.getQuestion()?.correctAnswer?.translate}"
         }
-
-        if ((isAnswerPrefixInData == true) && (question != null)) {
-            val answerIndex = data.lowercase().substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
-            val response = when {
-                trainer.checkAnswer(answerIndex) -> "Правильно!"
-                else -> "\nНеправильно! ${question.correctAnswer.original} " +
-                        "- ${question.correctAnswer.translate}"
-            }
-            telegramBotService.sendMessage(chatId, response)
-            question = checkNextQuestionAndSend(trainer, telegramBotService, chatId)
-        }
-
-        if (data?.lowercase() == LEARN_WORDS_CLICKED)
-            question = checkNextQuestionAndSend(trainer, telegramBotService, chatId)
+        telegramBotService.sendMessage(chatId, response)
+        checkNextQuestionAndSend(trainer, telegramBotService, chatId)
     }
 }
 

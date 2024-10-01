@@ -8,8 +8,11 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 
 const val TELEGRAM_API_DOMAIN = "https://api.telegram.org"
+
 const val LEARN_WORDS_CLICKED = "learn_words_clicked"
-const val STATISTICS_CLICKED = "statistics_clicked"
+const val STATISTICS_CLICKED = "reset_clicked"
+const val RESET_CLICKED = "statistics_clicked"
+
 const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
 
 class TelegramBotService(
@@ -49,7 +52,7 @@ class TelegramBotService(
         return sendMessageResponse.body()
     }
 
-    fun sendMenu(chatId: Long): String {
+    fun sendMenu(chatId: Long?): String {
         val urlSendMessage = "$TELEGRAM_API_DOMAIN/bot$botToken/sendMessage"
 
         val requestBody = SendMessageRequest(
@@ -60,6 +63,9 @@ class TelegramBotService(
                     listOf(
                         InlineKeyBoard(text = "Изучать слова", callbackData = LEARN_WORDS_CLICKED),
                         InlineKeyBoard(text = "Статистика", callbackData = STATISTICS_CLICKED),
+                    ),
+                    listOf(
+                        InlineKeyBoard(text = "Сбросить прогресс", callbackData = RESET_CLICKED),
                     )
                 )
             )

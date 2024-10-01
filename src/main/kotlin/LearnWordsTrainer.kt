@@ -5,7 +5,6 @@ import java.io.File
 
 const val MIN_CORRECT_ANSWERS_COUNT = 3
 const val NUMBER_OF_ANSWER_CHOICES = 4
-const val FILE_NAME = "words.txt"
 
 @Serializable
 data class Word(
@@ -25,10 +24,14 @@ data class Question(
     val correctAnswer: Word
 )
 
-class LearnWordsTrainer {
+class LearnWordsTrainer(
+    private val fileName: String = "words.txt"
+) {
 
     private var question: Question? = null
     private val dictionary = loadDictionary()
+
+    fun getQuestion() = question
 
     fun getStatistics(): Statistics {
         val numberOfWords = dictionary.size
@@ -66,30 +69,39 @@ class LearnWordsTrainer {
             val correctAnswerIndex = it.answerOptions.indexOf(it.correctAnswer)
             if (correctAnswerIndex == userAnswerIndex) {
                 it.correctAnswer.correctAnswersCount++
-                saveDictionary(dictionary)
+                saveDictionary()
                 true
             } else false
-        } ?: false
+        } == true
+    }
+
+    fun resetProgress() {
+        dictionary.forEach { it.correctAnswersCount = 0 }
+        saveDictionary()
     }
 
     private fun loadDictionary(): List<Word> {
         try {
+            val wordsFile = File(fileName)
+            if (!wordsFile.exists())
+                File("words.txt").copyTo(wordsFile)
+
             val dictionary = mutableListOf<Word>()
-            val wordsFile = File(FILE_NAME)
+
             wordsFile.readLines().forEach {
                 val splitLine = it.split("|")
                 dictionary.add(Word(splitLine[0], splitLine[1], splitLine[2].toIntOrNull() ?: 0))
             }
             return dictionary
-        } catch (e: IndexOutOfBoundsException) {
+        } catch (_: IndexOutOfBoundsException) {
             throw IllegalStateException("Некорректный файл")
         }
     }
 
-    private fun saveDictionary(words: List<Word>) {
-        val wordsFile = File(FILE_NAME)
+    private fun saveDictionary() {
+        val wordsFile = File(fileName)
         wordsFile.writeText("")
-        words.forEach {
+        dictionary.forEach {
             wordsFile.appendText("${it.original}|${it.translate}|${it.correctAnswersCount}\n")
         }
     }
