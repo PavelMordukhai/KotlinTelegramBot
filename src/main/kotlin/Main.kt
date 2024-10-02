@@ -11,7 +11,7 @@ fun main() {
 
     val trainer = try {
         LearnWordsTrainer()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         println("Невозможно загрузить словарь")
         return
     }
@@ -46,12 +46,10 @@ fun main() {
                         userAnswerInput = readln().trim().toIntOrNull()
                     } while (userAnswerInput !in 0..NUMBER_OF_ANSWER_CHOICES)
 
+                    val (_, response) = trainer.checkAnswer(userAnswerInput?.minus(1))
                     when {
                         userAnswerInput == 0 -> break
-                        trainer.checkAnswer(userAnswerInput?.minus(1)) -> println("\nПравильно!")
-                        else -> println("\nНеправильно! ${question.correctAnswer.original} " +
-                                    "- ${question.correctAnswer.translate}"
-                        )
+                        else -> println(response)
                     }
                 }
             }

@@ -31,8 +31,6 @@ class LearnWordsTrainer(
     private var question: Question? = null
     private val dictionary = loadDictionary()
 
-    fun getQuestion() = question
-
     fun getStatistics(): Statistics {
         val numberOfWords = dictionary.size
         val numberOfLearnedWords = dictionary.filter {
@@ -64,15 +62,19 @@ class LearnWordsTrainer(
         return question
     }
 
-    fun checkAnswer(userAnswerIndex: Int?): Boolean {
-        return question?.let {
+    fun checkAnswer(userAnswerIndex: Int?): Pair<Boolean, String> {
+        val correct = "Правильно!"
+        val incorrect = "Неправильно! ${question?.correctAnswer?.original} - ${question?.correctAnswer?.translate}"
+        question?.let {
             val correctAnswerIndex = it.answerOptions.indexOf(it.correctAnswer)
             if (correctAnswerIndex == userAnswerIndex) {
                 it.correctAnswer.correctAnswersCount++
                 saveDictionary()
-                true
-            } else false
-        } == true
+                return Pair(true, correct)
+            } else
+                return Pair(false, incorrect)
+        }
+        return Pair(true, correct)
     }
 
     fun resetProgress() {
@@ -84,7 +86,7 @@ class LearnWordsTrainer(
         try {
             val wordsFile = File(fileName)
             if (!wordsFile.exists())
-                File("words.txt").copyTo(wordsFile)
+                File(fileName).copyTo(wordsFile)
 
             val dictionary = mutableListOf<Word>()
 
