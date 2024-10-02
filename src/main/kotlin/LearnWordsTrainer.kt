@@ -62,7 +62,7 @@ class LearnWordsTrainer(
         return question
     }
 
-    fun checkAnswer(userAnswerIndex: Int?): Pair<Boolean, String> {
+    fun checkAnswer(userAnswerIndex: Int?): String {
         val correct = "Правильно!"
         val incorrect = "Неправильно! ${question?.correctAnswer?.original} - ${question?.correctAnswer?.translate}"
         question?.let {
@@ -70,11 +70,11 @@ class LearnWordsTrainer(
             if (correctAnswerIndex == userAnswerIndex) {
                 it.correctAnswer.correctAnswersCount++
                 saveDictionary()
-                return Pair(true, correct)
+                return correct
             } else
-                return Pair(false, incorrect)
+                return incorrect
         }
-        return Pair(true, correct)
+        return correct
     }
 
     fun resetProgress() {

@@ -46,7 +46,7 @@ fun main() {
                         userAnswerInput = readln().trim().toIntOrNull()
                     } while (userAnswerInput !in 0..NUMBER_OF_ANSWER_CHOICES)
 
-                    val (_, response) = trainer.checkAnswer(userAnswerInput?.minus(1))
+                    val response = trainer.checkAnswer(userAnswerInput?.minus(1))
                     when {
                         userAnswerInput == 0 -> break
                         else -> println(response)

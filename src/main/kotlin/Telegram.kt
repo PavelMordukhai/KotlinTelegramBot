@@ -131,7 +131,7 @@ fun handleUpdate(
 
     if (isAnswerPrefixInData == true) {
         val answerIndex = data.lowercase().substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
-        val (_, response) = trainer.checkAnswer(answerIndex)
+        val response = trainer.checkAnswer(answerIndex)
         telegramBotService.sendMessage(chatId, response)
         checkNextQuestionAndSend(trainer, telegramBotService, chatId)
     }
