@@ -25,6 +25,4 @@ kotlin {
     jvmToolchain(21)
 }
 
-application {
-    mainClass.set("TelegramKt")
-}
+project.setProperty("mainClassName", "org.example.TelegramKt")
