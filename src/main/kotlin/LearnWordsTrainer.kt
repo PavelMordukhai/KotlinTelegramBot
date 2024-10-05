@@ -86,7 +86,7 @@ class LearnWordsTrainer(
         try {
             val wordsFile = File(fileName)
             if (!wordsFile.exists())
-                File(fileName).copyTo(wordsFile)
+                File("words.txt").copyTo(wordsFile)
 
             val dictionary = mutableListOf<Word>()
 
